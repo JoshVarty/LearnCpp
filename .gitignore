@@ -1,3 +1,13 @@
+# Project 1 .gitignore
+*.swp
+*.osm
+*.o
+draw.cpp
+test.cpp
+build/
+bin/
+lib/
+
 # Prerequisites
 *.d
 
