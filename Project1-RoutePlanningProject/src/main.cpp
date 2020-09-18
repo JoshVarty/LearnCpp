@@ -59,9 +59,9 @@ int main(int argc, const char **argv)
     // RoutePlanner object below in place of 10, 10, 90, 90.
     float start_x, start_y, end_x, end_y;
 
-    cout << "Enter Start X:";
+    cout << "Enter Start X: ";
     cin >> start_x;
-    cout << "Enter Start Y:";
+    cout << "Enter Start Y: ";
     cin >> start_y;
 
     cout << "Enter End X: ";
