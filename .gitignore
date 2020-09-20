@@ -8,6 +8,12 @@ build/
 bin/
 lib/
 
+# Project 2 .gitignore
+monitor
+settings.json
+*.json
+
+
 # Prerequisites
 *.d
 
