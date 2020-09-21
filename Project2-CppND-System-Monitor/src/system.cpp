@@ -3,6 +3,7 @@
 #include <set>
 #include <string>
 #include <vector>
+#include <ctime>
 
 #include "process.h"
 #include "processor.h"
@@ -35,4 +36,16 @@ int System::RunningProcesses() { return 0; }
 int System::TotalProcesses() { return 0; }
 
 // TODO: Return the number of seconds since the system started running
-long int System::UpTime() { return 0; }
+long System::UpTime() { 
+    if (!startTime) {
+        // Get current time in seconds
+        std::time_t currentTime = std::time(nullptr);
+        startTime = (long)currentTime;
+        return 0;
+    }
+
+    // Get current time in seconds
+    std::time_t currentTime = std::time(nullptr);
+    long elapsedTime = (long)currentTime - startTime;
+    return elapsedTime;
+}
