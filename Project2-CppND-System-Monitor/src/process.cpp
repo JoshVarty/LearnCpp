@@ -27,7 +27,7 @@ int Process::Pid() {
 }
 
 // TODO: Return this process's CPU utilization
-float Process::CpuUtilization() const { 
+float Process::CpuUtilization() { 
     return cpuUtilization_;
 }
 
@@ -53,6 +53,6 @@ long int Process::UpTime() {
 
 // TODO: Overload the "less than" comparison operator for Process objects
 // REMOVE: [[maybe_unused]] once you define the function
-bool Process::operator<(Process const& a[[maybe_unused]]) const { 
-    return this->CpuUtilization() > a.CpuUtilization();
+bool Process::operator<(Process& a) { 
+    return this->Ram() > a.Ram();
 }

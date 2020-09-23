@@ -109,60 +109,6 @@ int LinuxParser::UpTime() {
     return 0;
 }
 
-// TODO: Read and return the number of jiffies for the system
-long LinuxParser::Jiffies() { 
-    string line, key;
-    int totalJiffies = 0;
-    int currentJiffies = 0;
-    std::ifstream stream(kProcDirectory + kStatFilename);
-    if (stream.is_open()) {
-      if(std::getline(stream, line)) {
-        auto linestream = std::istringstream(line);
-        linestream >> key;
-        
-        for (int i = 0; i < 10; i++) {
-          linestream >> currentJiffies;
-          totalJiffies += currentJiffies;
-        }
-
-        return totalJiffies;
-      }
-    }
-    // Fall back to 0 jiffies if we can't read the file
-    return 0;
-}
-
-// TODO: Read and return the number of active jiffies for a PID
-// REMOVE: [[maybe_unused]] once you define the function
-long LinuxParser::ActiveJiffies(int pid[[maybe_unused]]) { return 0; }
-
-// TODO: Read and return the number of active jiffies for the system
-long LinuxParser::ActiveJiffies() { return 0; }
-
-// TODO: Read and return the number of idle jiffies for the system
-long LinuxParser::IdleJiffies() { 
-    string line, key;
-    int idleJiffies = 0;
-    int temp = 0;
-    std::ifstream stream(kProcDirectory + kStatFilename);
-    if (stream.is_open()) {
-      if(std::getline(stream, line)) {
-        auto linestream = std::istringstream(line);
-        linestream >> key;
-        
-        for (int i = 0; i < 3; i++) {
-          linestream >> temp;
-        }
-
-        linestream >> idleJiffies;
-
-        return idleJiffies;
-      }
-    }
-    // Fall back to 0 processes if we can't read the file
-    return 0;
-}
-
 // TODO: Read and return CPU utilization
 vector<string> LinuxParser::CpuUtilization() {
   string line, key, val;
@@ -219,10 +165,9 @@ float LinuxParser::CpuUtilization(int pid) {
     int systemUptime = UpTime();
     float total_time = utime + stime + cutime + cstime;
     float seconds = systemUptime - (starttime / sysconf(_SC_CLK_TCK));
-    if (total_time > 0)  {
-      auto x = total_time;
-    }
     if (seconds != 0) {
+      // Sometimes seconds is returned as zero
+      // In this case we don't want to divide by zero
       return total_time / seconds / sysconf(_SC_CLK_TCK);
     }
 
