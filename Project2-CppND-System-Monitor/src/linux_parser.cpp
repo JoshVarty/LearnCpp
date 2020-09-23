@@ -164,7 +164,24 @@ long LinuxParser::IdleJiffies() {
 }
 
 // TODO: Read and return CPU utilization
-vector<string> LinuxParser::CpuUtilization() { return {}; }
+vector<string> LinuxParser::CpuUtilization() {
+  string line, key, val;
+
+  vector<string> stats;
+  std::ifstream stream(kProcDirectory + kStatFilename);
+  if (stream.is_open() && std::getline(stream, line)) {
+    auto linestream = std::istringstream(line);
+    linestream >> key;
+    while (linestream >> val) {
+      stats.push_back(val);
+    }
+
+    return stats;
+  }
+
+  // Fallback to empty vector if we can't open the file
+  return {}; 
+}
 
 float LinuxParser::CpuUtilization(int pid) {
 
