@@ -64,8 +64,8 @@ ChatBot& ChatBot::operator=(const ChatBot &source) {
     delete _image;
     *_image = *source._image;
 
-    delete _chatLogic;
-    *_chatLogic = *source._chatLogic;
+    // delete _chatLogic;
+    // *_chatLogic = *source._chatLogic;
 
     delete _rootNode;
     *_rootNode = *source._rootNode;
