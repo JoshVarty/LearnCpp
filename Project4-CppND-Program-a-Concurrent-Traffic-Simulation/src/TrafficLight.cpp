@@ -1,5 +1,6 @@
 #include <iostream>
 #include <random>
+#include <chrono>
 #include "TrafficLight.h"
 
 /* Implementation of class "MessageQueue" */
@@ -44,8 +45,7 @@ TrafficLightPhase TrafficLight::getCurrentPhase()
 void TrafficLight::simulate()
 {
     // FP.2b : Finally, the private method „cycleThroughPhases“ should be started in a thread when the public method „simulate“ is called. To do this, use the thread queue in the base class. 
-
-
+    threads.emplace_back(std::thread(&TrafficLight::cycleThroughPhases, this));
 }
 
 // virtual function which is executed in a thread
@@ -55,4 +55,33 @@ void TrafficLight::cycleThroughPhases()
     // and toggles the current phase of the traffic light between red and green and sends an update method 
     // to the message queue using move semantics. The cycle duration should be a random value between 4 and 6 seconds. 
     // Also, the while-loop should use std::this_thread::sleep_for to wait 1ms between two cycles. 
+
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_int_distribution<> distr(4000,6000);   
+    int time_until_change = distr(gen);
+
+    auto last_time = std::chrono::steady_clock::now();
+    while (true) {
+        auto cur_time = std::chrono::steady_clock::now();
+        auto difference = std::chrono::duration_cast<std::chrono::milliseconds>(cur_time - last_time).count();
+
+        if(difference > time_until_change) {
+
+            auto phase = getCurrentPhase();
+            if (phase) {
+                this->_currentPhase = TrafficLightPhase::red;
+            }
+            else {
+                this->_currentPhase = TrafficLightPhase::green;
+            }
+
+            //TODO: Add phase to message queue?
+
+            time_until_change = distr(gen);
+            last_time = std::chrono::steady_clock::now();
+        }
+        
+        std::this_thread::sleep_for(std::chrono::milliseconds(1));
+    }
 }
