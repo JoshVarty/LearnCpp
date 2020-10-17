@@ -13,9 +13,9 @@ T MessageQueue<T>::receive()
     // The received object should then be returned by the receive function. 
     std::unique_lock<std::mutex> ulock(_mutex);
     _condition.wait(ulock, [this]{return !_queue.empty();});
-    auto message = _queue.back();
-    _queue.pop_back();
-    return std::move(message);
+    auto message = std::move(_queue.back());
+    _queue.clear();
+    return message;
 }
 
 template <typename T>
@@ -25,7 +25,7 @@ void MessageQueue<T>::send(T &&msg)
     // as well as _condition.notify_one() to add a new message to the queue and afterwards send a notification.
     std::lock_guard<std::mutex> lock(_mutex);
     _queue.emplace_back(std::move(msg));
-    MessageQueue::_condition.notify_one();
+    _condition.notify_one();
 }
 
 /* Implementation of class "TrafficLight" */
@@ -71,31 +71,26 @@ void TrafficLight::cycleThroughPhases()
 
     std::random_device rd;
     std::mt19937 gen(rd());
-    std::uniform_int_distribution<> distr(4000,6000);   
-    int time_until_change = distr(gen);
+    std::uniform_real_distribution<double> distr(4.0, 6.0);
+    double time_to_wait = distr(gen);
 
-    auto last_time = std::chrono::steady_clock::now();
-    while (true) {
-        auto cur_time = std::chrono::steady_clock::now();
-        auto difference = std::chrono::duration_cast<std::chrono::milliseconds>(cur_time - last_time).count();
-
-        if(difference > time_until_change) {
-
+    auto last_time = std::chrono::system_clock::now();
+    while(true) {
+        auto cur_time = std::chrono::system_clock::now();
+        std::chrono::duration<double> difference = (cur_time - last_time);
+        if (difference.count() >= time_to_wait) {
             auto phase = getCurrentPhase();
-            if (phase) {
-                this->_currentPhase = TrafficLightPhase::red;
-            }
-            else {
-                this->_currentPhase = TrafficLightPhase::green;
+            if (phase == TrafficLightPhase::green) {
+                _currentPhase = TrafficLightPhase::red;
+                _messageQueue.send(std::move(TrafficLightPhase::red));
+            } else {
+                _currentPhase = TrafficLightPhase::green;
+                _messageQueue.send(std::move(TrafficLightPhase::green));
             }
 
-            //TODO: Add phase to message queue?
-            _messageQueue.send(std::move(phase));
-
-            time_until_change = distr(gen);
-            last_time = std::chrono::steady_clock::now();
+            time_to_wait = distr(gen);
+            last_time = std::chrono::system_clock::now();
+            std::this_thread::sleep_for(std::chrono::milliseconds(1));
         }
-        
-        std::this_thread::sleep_for(std::chrono::milliseconds(1));
     }
 }
